@@ -7,6 +7,8 @@ A mobile-first React and TypeScript workout application for the approved Office 
 - **Workout dashboard:** current Monday-through-Sunday workout count, Office/Home choice, manual Day 1–3 choice, recent workout, and the four exercises excluded from the next session.
 - **Workout preview:** exact exercise order, first superset, sets and rep targets, unavailable-exercise warnings, and mandatory same-category replacements before starting.
 - **Active workout:** Superset A/B round order, three editable set rows per exercise, load-mode-specific inputs, reps, effort, completion state, set notes, previous performance, equipment, form cues, and substitutions before the first completed set.
+- **Round timers:** manually started five-minute timer for each superset round, timestamp-based phase changes, prominent Exercise 2 and next-round alerts, and optional audio cues that are off by default.
+- **Overall timer:** manually started elapsed-workout timer with pause, resume, refresh-safe state, and an optional saved duration on completed workouts.
 - **Autosave and resume:** an immediate same-device draft plus a debounced synchronized Supabase draft. Drafts never affect exclusions.
 - **Review and completion:** incomplete-set warning, workout notes, final confirmation, concise summary, and a newly calculated global exclusion list.
 - **History:** month calendar, full completed-workout records, substitutions, set details, corrections, and confirmed deletion.
@@ -60,7 +62,9 @@ Open the local URL printed by Vite. Add that exact local URL to Supabase's allow
 2. In the Supabase dashboard, open **SQL Editor** and create a new query.
 3. Copy the complete contents of [`supabase/migrations/202608230001_initial_workout_schema.sql`](supabase/migrations/202608230001_initial_workout_schema.sql) into the editor.
 4. Select **Run** once.
-5. In **Table Editor**, confirm these six tables exist:
+5. Apply the additive migration immediately afterward by following **Apply the current additive migration** below.
+6. In **Table Editor**, confirm these six tables exist:
+
    - `exercises`
    - `workout_templates`
    - `workout_template_slots`
@@ -69,6 +73,35 @@ Open the local URL printed by Vite. Add that exact local URL to Supabase's allow
    - `set_logs`
 
 The migration seeds 47 stable exercise records, all six fixed templates, and all 24 template slots. It also adds database validation for ownership, location compatibility, same-category substitutions, inherited slot rules, unique exercises, and required set data.
+
+### Apply the current additive migration
+
+The initial migration has intentionally not been edited. For an existing live database, do not rerun it. Apply only the newer migration in this order:
+
+1. In this project, open `supabase/migrations/202609010001_add_workout_duration_and_demonstration_links.sql`.
+2. In the Supabase dashboard for the existing project, open **SQL Editor**.
+3. Select **New query**.
+4. Copy the complete contents of the newer migration file and paste them into the query editor. Include `begin;` at the top and `commit;` at the bottom.
+5. Select **Run** once and wait for the green success result. The script is additive: it keeps existing workout rows, allows their duration to remain `null`, and leaves all Row Level Security policies in place.
+6. Create another new query, paste the verification SQL below, and select **Run**:
+
+   ```sql
+   select column_name, data_type, is_nullable
+   from information_schema.columns
+   where table_schema = 'public'
+     and table_name = 'workout_sessions'
+     and column_name = 'duration_seconds';
+
+   select
+     count(*) filter (where demonstration_url is not null) as linked_exercises,
+     count(*) filter (where demonstration_url is null) as unresolved_exercises,
+     count(*) as total_exercises
+   from public.exercises;
+   ```
+
+7. Confirm the first result contains one nullable integer column named `duration_seconds`. Confirm the second result is `44` linked, `3` unresolved, and `47` total.
+
+If the verification counts differ, stop before deploying the updated app and check that the entire migration was copied into the SQL Editor.
 
 ### Enable passwordless email magic links
 
@@ -168,12 +201,16 @@ The automated tests cover:
 - every load-entry mode;
 - all six approved templates and all 24 exact slots;
 - authenticated-user RLS policy coverage for all workout-history tables;
-- publishable-key-only deployment configuration; and
-- relative Vite assets plus refresh-safe hash navigation for GitHub Pages.
+- publishable-key-only deployment configuration;
+- relative Vite assets plus refresh-safe hash navigation for GitHub Pages;
+- five-minute timer phase boundaries, prominent visual alerts, and no automatic restart;
+- overall timer start, pause, resume, refresh restoration, and pause exclusion;
+- duration persistence and display for both timed and legacy untimed workouts; and
+- demonstration-link coverage, stable IDs, migration parity, and safe new-tab behavior.
 
 ## Demonstration links
 
-No unverified demonstration URL is fabricated. Every catalog entry currently stores `null`, and the interface displays **“Demonstration link not added.”** See [`DEMONSTRATION_LINKS.md`](DEMONSTRATION_LINKS.md) for the complete verification list.
+The catalog contains 44 researched demonstration pages. Three exact setups remain intentionally unresolved and continue to display **“Demonstration link not added.”** See [`DEMONSTRATION_LINKS.md`](DEMONSTRATION_LINKS.md) for the complete 47-exercise verification table.
 
 ## Current assumptions and limitations
 
@@ -185,5 +222,6 @@ No unverified demonstration URL is fabricated. Every catalog entry currently sto
 - Bodyweight progress shows reps and effort. It never invents a weight value.
 - Autosave writes immediately to the device and synchronizes after a short debounce. If the device is offline, the draft remains resumable there and synchronizes after a later edit when connectivity returns.
 - If the same draft is edited simultaneously on two devices, the last synchronized edit wins. Completed workout history remains synchronized and protected by RLS.
-- The database migration must be applied before the first authenticated data request. The app cannot create tables with a browser key.
-- No estimated one-rep maximum, workout timer, nutrition, social, gamification, or unrelated feature is included.
+- The additive database migration must be applied before this version first loads authenticated workout data. The app cannot change tables with a browser key.
+- Timer math uses saved timestamps, so visual state catches up after background throttling or a refresh. Optional Web Audio cues can still be blocked by browser autoplay, power-saving, or background-tab policies; visual alerts do not depend on audio.
+- No estimated one-rep maximum, nutrition, social, gamification, or unrelated feature is included.

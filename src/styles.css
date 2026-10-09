@@ -299,6 +299,20 @@ input::placeholder, textarea::placeholder { color: #687f98; }
 .save-status span { display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; background: var(--green-soft); color: var(--green); }
 .save-status.saving span { background: var(--blue-soft); color: var(--blue); animation: spin 1s linear infinite; }
 .save-status.error span, .save-status.offline span { background: var(--danger-soft); color: var(--danger); animation: none; }
+.overall-timer { display: grid; gap: 14px; border-color: rgba(90, 167, 255, 0.36); background: linear-gradient(145deg, rgba(90, 167, 255, 0.11), var(--navy-800)); }
+.overall-timer-copy { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 3px 12px; }
+.overall-timer-copy > span { color: var(--blue); font-size: 0.66rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+.overall-timer-copy > strong { grid-row: 1 / span 2; grid-column: 2; color: var(--text); font-size: 2rem; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
+.overall-timer-copy > small { color: var(--muted); font-size: 0.72rem; }
+.timer-status-running { color: var(--green) !important; }
+.timer-status-paused { color: var(--gold) !important; }
+.overall-timer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.overall-timer-actions > button { min-width: 120px; }
+.timer-finished-label { color: var(--muted); font-size: 0.7rem; }
+.audio-toggle { display: grid; grid-template-columns: 21px minmax(0, 1fr); align-items: center; gap: 1px 8px; margin-left: auto; }
+.audio-toggle input { grid-row: 1 / span 2; width: 20px; height: 20px; accent-color: var(--blue); }
+.audio-toggle span { color: var(--text); font-size: 0.72rem; font-weight: 800; }
+.audio-toggle small { color: var(--muted-2); font-size: 0.58rem; }
 .effort-guide { display: grid; gap: 15px; }
 .effort-guide > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .effort-guide > div span { color: var(--muted); font-size: 0.78rem; }
@@ -332,10 +346,26 @@ input::placeholder, textarea::placeholder { color: #687f98; }
 .round-title { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--navy-900); }
 .round-title span { color: var(--superset-color); font-size: 0.72rem; font-weight: 900; text-transform: uppercase; }
 .round-title small { color: var(--muted-2); }
-.round-exercise { padding: 14px 14px 16px; border-bottom: 1px dashed var(--line); }
-.round-exercise:last-child { border-bottom: 0; }
+.round-exercise-group { display: grid; border-bottom: 1px dashed var(--line); }
+.round-exercise-group:last-child { border-bottom: 0; }
+.round-exercise { padding: 14px 14px 16px; }
 .round-exercise h4 { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.82rem; }
 .round-exercise h4 span { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 7px; background: var(--superset-soft); color: var(--superset-color); }
+.superset-timer { display: grid; gap: 11px; margin: 0 14px 14px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--navy-950); }
+.superset-timer-idle { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.superset-timer-idle > div, .superset-timer-clock, .superset-timer-phase { display: grid; gap: 3px; }
+.superset-timer-idle span, .superset-timer-clock span, .superset-timer-phase span { color: var(--muted-2); font-size: 0.58rem; font-weight: 850; text-transform: uppercase; }
+.superset-timer-idle strong, .superset-timer-clock strong { font-size: 1.45rem; font-variant-numeric: tabular-nums; }
+.superset-timer-idle button { min-height: 40px; padding: 0 11px; font-size: 0.68rem; }
+.superset-timer-clock { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.superset-timer-clock strong { grid-row: 1 / span 2; grid-column: 2; color: var(--superset-color); }
+.superset-timer-phase strong { font-size: 0.86rem; }
+.superset-timer-phase small { color: var(--muted); font-size: 0.66rem; line-height: 1.4; }
+.superset-timer > .text-button { justify-self: start; min-height: 32px; color: var(--muted); font-size: 0.65rem; }
+.superset-timer.prominent { border-color: var(--gold); background: rgba(244, 198, 76, 0.12); box-shadow: 0 0 0 3px rgba(244, 198, 76, 0.08); }
+.superset-timer-perform_exercise_2 .superset-timer-phase strong, .superset-timer-begin_next_round .superset-timer-phase strong { color: var(--gold); font-size: 1rem; }
+.superset-timer-begin_next_round { border-color: var(--green) !important; background: var(--green-soft) !important; }
+.superset-timer-begin_next_round .superset-timer-phase strong, .superset-timer-begin_next_round .superset-timer-clock strong { color: var(--green); }
 .set-editor { display: grid; grid-template-columns: 52px repeat(2, minmax(0, 1fr)); gap: 10px; padding: 12px; border: 1px solid var(--line-soft); border-radius: 15px; background: var(--navy-850); }
 .set-editor.complete { border-color: rgba(82, 214, 165, 0.38); background: rgba(82, 214, 165, 0.055); }
 .set-number { display: grid; grid-row: span 2; min-height: 54px; place-items: center; align-content: center; border-radius: 11px; background: var(--navy-950); }
@@ -366,7 +396,7 @@ input::placeholder, textarea::placeholder { color: #687f98; }
 .modal-body { display: grid; gap: 16px; min-height: 0; overflow-y: auto; padding: 18px; }
 .modal-actions { display: flex; flex: 0 0 auto; justify-content: flex-end; gap: 9px; padding: 13px 17px max(13px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--navy-900); }
 .modal-actions button { padding: 0 16px; }
-.review-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.review-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
 .review-summary > div { display: grid; min-width: 0; gap: 3px; padding: 11px 8px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--navy-900); text-align: center; }
 .review-summary span { color: var(--muted-2); font-size: 0.6rem; text-transform: uppercase; }
 .review-summary strong { font-size: 1rem; }

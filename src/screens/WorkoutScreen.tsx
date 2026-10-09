@@ -3,6 +3,7 @@ import { Modal } from "../components/Modal";
 import { ExerciseDetails, ExerciseMeta, PreviousPerformance } from "../components/ExerciseInfo";
 import { SetEditor } from "../components/SetEditor";
 import { Notice } from "../components/Status";
+import { OverallWorkoutTimer, SupersetRoundTimer, useWorkoutTimers } from "../components/WorkoutTimers";
 import { categoryLabels, exerciseById, getTemplate } from "../programData";
 import {
   completedRepCount,
@@ -340,6 +341,7 @@ function ActiveWorkout({
   const [finishing, setFinishing] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const completedSets = completedSetCount(session);
+  const workoutTimers = useWorkoutTimers(session.id);
   const groups = useMemo(() => {
     const order = [session.exercises[0]?.superset, session.exercises.find((item) => item.superset !== session.exercises[0]?.superset)?.superset].filter(Boolean);
     return order.map((superset) => ({
@@ -422,6 +424,16 @@ function ActiveWorkout({
         {saveState === "saved" ? "Progress saved" : saveState === "saving" ? "Saving progress…" : saveState === "offline" ? "Saved on this device; waiting to sync" : "Sync problem; your device copy is safe"}
       </div>
 
+      <OverallWorkoutTimer
+        timerState={workoutTimers.timerState}
+        nowMs={workoutTimers.nowMs}
+        audioEnabled={workoutTimers.audioEnabled}
+        onAudioChange={workoutTimers.setAudio}
+        onStart={workoutTimers.startOverall}
+        onPause={workoutTimers.pauseOverall}
+        onResume={workoutTimers.resumeOverall}
+      />
+
       <section className="effort-guide panel">
         <div><span>Normal target</span><strong>Effort 8–9</strong></div>
         <dl>
@@ -493,13 +505,27 @@ function ActiveWorkout({
             {([0, 1, 2] as const).map((roundIndex) => (
               <div className="round" key={roundIndex}>
                 <div className="round-title"><span>Round {roundIndex + 1}</span><small>{group.exercises[0]?.slotPosition} then {group.exercises[1]?.slotPosition}</small></div>
-                {group.exercises.map((performed) => {
+                {group.exercises.map((performed, exerciseIndex) => {
                   const actual = exerciseById.get(performed.actualExerciseId)!;
                   const set = performed.setLogs[roundIndex];
                   return (
-                    <div className="round-exercise" key={performed.id}>
-                      <h4><span>{performed.slotPosition}</span>{actual.name}</h4>
-                      <SetEditor set={set} performed={performed} exercise={actual} onChange={(next) => updateSet(performed.id, next)} />
+                    <div className="round-exercise-group" key={performed.id}>
+                      <div className="round-exercise">
+                        <h4><span>{performed.slotPosition}</span>{actual.name}</h4>
+                        <SetEditor set={set} performed={performed} exercise={actual} onChange={(next) => updateSet(performed.id, next)} />
+                      </div>
+                      {exerciseIndex === 0 ? (
+                        <SupersetRoundTimer
+                          superset={group.superset}
+                          roundIndex={roundIndex}
+                          activeTimer={workoutTimers.timerState.superset}
+                          nowMs={workoutTimers.nowMs}
+                          secondExerciseCompleted={Boolean(group.exercises[1]?.setLogs[roundIndex]?.completed)}
+                          audioEnabled={workoutTimers.audioEnabled}
+                          onStart={() => workoutTimers.startSuperset(group.superset, roundIndex)}
+                          onClear={workoutTimers.clearSuperset}
+                        />
+                      ) : null}
                     </div>
                   );
                 })}

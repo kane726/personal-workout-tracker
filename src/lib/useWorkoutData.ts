@@ -7,6 +7,12 @@ import {
   listCompletedSessions,
   saveSessionSnapshot,
 } from "./repository";
+import {
+  clearWorkoutTimerState,
+  loadWorkoutTimerState,
+  saveWorkoutTimerState,
+} from "./timers";
+import { prepareWorkoutForCompletion } from "./workoutCompletion";
 
 const localKey = (userId: string) => `personal-workout-active:${userId}`;
 
@@ -15,7 +21,9 @@ function readLocalDraft(userId: string) {
     const raw = localStorage.getItem(localKey(userId));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as WorkoutSession;
-    return parsed.userId === userId && parsed.status === "draft" ? parsed : null;
+    return parsed.userId === userId && parsed.status === "draft"
+      ? { ...parsed, durationSeconds: parsed.durationSeconds ?? null }
+      : null;
   } catch {
     return null;
   }
@@ -128,12 +136,17 @@ export function useWorkoutData(userId: string | null) {
     if (!active || !userId) return null;
     if (timerRef.current) clearTimeout(timerRef.current);
     setSaveState("saving");
-    const snapshot = structuredClone(active);
+    const finishedAtMs = Date.now();
+    const timerState = loadWorkoutTimerState(active.id);
+    const prepared = prepareWorkoutForCompletion(structuredClone(active), timerState, finishedAtMs);
+    const snapshot = prepared.session;
+    saveWorkoutTimerState(active.id, prepared.timerState);
     await saveChainRef.current;
     const completed = await persistCompletion(snapshot);
     setLastCompleted(completed);
     setActive(null);
     localStorage.removeItem(localKey(userId));
+    clearWorkoutTimerState(completed.id);
     setSessions((current) => [completed, ...current.filter((item) => item.id !== completed.id)]);
     setSaveState("saved");
     return completed;
@@ -146,6 +159,7 @@ export function useWorkoutData(userId: string | null) {
     await deleteSession(active.id, userId);
     setActive(null);
     localStorage.removeItem(localKey(userId));
+    clearWorkoutTimerState(active.id);
     setSaveState("saved");
   };
 

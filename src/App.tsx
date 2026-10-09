@@ -1,6 +1,7 @@
 import { AppShell } from "./components/AppShell";
 import { Modal } from "./components/Modal";
 import { LoadingScreen, Notice } from "./components/Status";
+import { WorkoutDuration } from "./components/WorkoutDuration";
 import { useAuth } from "./lib/AuthContext";
 import { useHashRoute } from "./lib/useHashRoute";
 import { useWorkoutData } from "./lib/useWorkoutData";
@@ -72,6 +73,7 @@ export default function App() {
             <div><span>Sets</span><strong>{completedSetCount(summary)}</strong></div>
             <div><span>Reps</span><strong>{completedRepCount(summary)}</strong></div>
             <div><span>Substitutions</span><strong>{summary.substitutionsUsed ? "Yes" : "No"}</strong></div>
+            <div><span>Duration</span><strong><WorkoutDuration seconds={summary.durationSeconds} /></strong></div>
           </div>
           <div className="completion-exclusions">
             <span>Excluded from your next completed workout</span>

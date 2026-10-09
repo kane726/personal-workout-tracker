@@ -35,3 +35,14 @@ export function formatNumber(value: number | null, digits = 1) {
   if (value === null) return "—";
   return Number.isInteger(value) ? String(value) : value.toFixed(digits);
 }
+
+export function formatDuration(seconds: number | null) {
+  if (seconds === null) return "Not recorded";
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const remainder = safeSeconds % 60;
+  return hours > 0
+    ? `${hours}:${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`
+    : `${minutes}:${String(remainder).padStart(2, "0")}`;
+}

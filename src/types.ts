@@ -78,6 +78,7 @@ export interface WorkoutSession {
   status: WorkoutStatus;
   startedAt: string;
   completedAt: string | null;
+  durationSeconds: number | null;
   notes: string;
   substitutionsUsed: boolean;
   exercises: PerformedExercise[];

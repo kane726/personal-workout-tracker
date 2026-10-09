@@ -36,6 +36,7 @@ type DbSession = {
   status: "draft" | "completed";
   started_at: string;
   completed_at: string | null;
+  duration_seconds: number | null;
   notes: string | null;
   substitutions_used: boolean;
   session_exercises?: DbExercise[];
@@ -50,6 +51,7 @@ const selectSession = `
   status,
   started_at,
   completed_at,
+  duration_seconds,
   notes,
   substitutions_used,
   session_exercises (
@@ -121,6 +123,7 @@ function mapSession(row: DbSession): WorkoutSession {
     status: row.status,
     startedAt: row.started_at,
     completedAt: row.completed_at,
+    durationSeconds: row.duration_seconds,
     notes: row.notes ?? "",
     substitutionsUsed: row.substitutions_used,
     exercises: (row.session_exercises ?? [])
@@ -139,6 +142,7 @@ function sessionRow(session: WorkoutSession) {
     status: session.status,
     started_at: session.startedAt,
     completed_at: session.completedAt,
+    duration_seconds: session.durationSeconds,
     notes: session.notes,
     substitutions_used: session.substitutionsUsed,
   };

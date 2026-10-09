@@ -111,6 +111,7 @@ export function createDraftSession(args: {
     status: "draft",
     startedAt: (args.now ?? new Date()).toISOString(),
     completedAt: null,
+    durationSeconds: null,
     notes: "",
     substitutionsUsed: exercisesForSession.some(
       (performed) => performed.actualExerciseId !== performed.scheduledExerciseId,

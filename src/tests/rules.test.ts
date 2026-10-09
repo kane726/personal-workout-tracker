@@ -53,6 +53,7 @@ function session(args: {
     status: args.status,
     startedAt: "2026-08-20T12:00:00.000Z",
     completedAt: args.completedAt,
+    durationSeconds: null,
     notes: "",
     substitutionsUsed: false,
     exercises: [performed(args.exerciseId)],

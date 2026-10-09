@@ -58,7 +58,7 @@ export function ExerciseDetails({ exercise, performed }: { exercise: Exercise; p
       <div className="detail-wide">
         <span>Demonstration</span>
         {exercise.demonstrationUrl ? (
-          <a href={exercise.demonstrationUrl} target="_blank" rel="noreferrer">Open demonstration</a>
+          <a href={exercise.demonstrationUrl} target="_blank" rel="noopener noreferrer">Open demonstration</a>
         ) : (
           <p>Demonstration link not added.</p>
         )}

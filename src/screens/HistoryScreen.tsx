@@ -4,6 +4,7 @@ import { EmptyState, Notice } from "../components/Status";
 import { Modal } from "../components/Modal";
 import { ExerciseDetails, ExerciseMeta } from "../components/ExerciseInfo";
 import { SetEditor } from "../components/SetEditor";
+import { WorkoutDuration } from "../components/WorkoutDuration";
 import { exerciseById } from "../programData";
 import { completedRepCount, completedSetCount, formatLoad } from "../lib/rules";
 import { formatDate, formatDateTime, sessionTitle } from "../lib/format";
@@ -58,6 +59,7 @@ export function HistoryScreen({
                       <span><strong>{completedSetCount(session)}</strong> sets</span>
                       <span><strong>{completedRepCount(session)}</strong> reps</span>
                       <span><strong>{session.exercises.filter((item) => item.setLogs.some((set) => set.completed)).length}</strong> exercises</span>
+                      {session.durationSeconds !== null ? <span><strong><WorkoutDuration seconds={session.durationSeconds} /></strong> duration</span> : null}
                     </div>
                     <div className="history-exercise-names">
                       {session.exercises.filter((item) => item.setLogs.some((set) => set.completed)).map((performed) => (
@@ -169,6 +171,7 @@ function WorkoutRecord({
         <div><span>Sets</span><strong>{completedSetCount(draft)}</strong></div>
         <div><span>Reps</span><strong>{completedRepCount(draft)}</strong></div>
         <div><span>Substitutions</span><strong>{draft.substitutionsUsed ? "Yes" : "No"}</strong></div>
+        <div><span>Duration</span><strong><WorkoutDuration seconds={draft.durationSeconds} /></strong></div>
       </div>
 
       <div className="record-exercises">
